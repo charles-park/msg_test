@@ -104,6 +104,7 @@ void ptc_event (ptc_grp_t *ptc_grp, __u8 idata)
 {
     __u8 ptc_pos;
 
+dbg("%c\n", idata);
 	for (ptc_pos = 0; ptc_pos < ptc_grp->pcnt; ptc_pos++)	{
 		if (ptc_grp->p[ptc_pos].var.open)	{
 			ptc_q (ptc_grp, ptc_pos, idata);

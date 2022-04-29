@@ -114,7 +114,7 @@ typedef struct msg__t {
 #pragma pack(1)
 typedef struct protocol__t {
 	char	header;
-	msg_t	*pmsg;
+	msg_t	p;
 	char	tail;
 }	protocol_t;
 
@@ -144,15 +144,10 @@ int cat_func (ptc_var_t *var)
 }
 
 //------------------------------------------------------------------------------
-void send_ack (ptc_grp_t *ptc_grp, msg_t *m)
+void send_msg (ptc_grp_t *ptc_grp, void *s)
 {
-	protocol_t ack;
+	char *p = (char *)s;
 	int i;
-	char *p = (char *)&ack;
-
-	ack.header 	= '@';	ack.tail   	= '#';
-	ack.pmsg	= m;
-
 	for (i = 0; i < sizeof(protocol_t); i++)
 		queue_put (&ptc_grp->dq, p + i);
 }
@@ -165,10 +160,14 @@ int send_boot_cmd(ptc_grp_t *ptc_grp)
 	while (true) {
 		// send boot msg
 		if ((w_cnt % 5) == 0) {
-			msg_t s_msg;
-			s_msg.cmd = 'b';
-			info ("send boot cmd = %c\n", s_msg.cmd);
-			send_ack (ptc_grp, &s_msg);
+			protocol_t s;
+
+			memset(&s, 0, sizeof(protocol_t));
+			s.header = '@';
+			s.tail   = '#';
+			s.p.cmd  = 'b';
+			info ("send boot cmd = %c\n", s.p.cmd);
+			send_msg (ptc_grp, &s);
 			w_cnt = 0;
 		}
 
@@ -194,16 +193,18 @@ int wait_boot_cmd(ptc_grp_t *ptc_grp)
 	while (true) {
 		if (ptc_grp->p[0].var.pass) {
 			msg_t *r_msg = (msg_t *)ptc_grp->p[0].var.arg;
-			msg_t s_msg;
 			ptc_grp->p[0].var.pass = false;
 			ptc_grp->p[0].var.open = true;
 
 			if (r_msg->cmd == 'b') {
+				protocol_t s;
 				info ("boot complete. i'm ready...\n");
-				s_msg.cmd = r_msg->cmd;
-				sprintf(s_msg.msg,"%s", "ready");
-				sprintf(s_msg.data, "wait %d", w_cnt);
-				send_ack (ptc_grp, &s_msg);
+				s.header = '@';
+				s.tail = '#';
+				s.p.cmd = r_msg->cmd;
+				sprintf(s.p.msg,"%s", "ready");
+				sprintf(s.p.data, "wait %d", w_cnt);
+				send_msg (ptc_grp, &s);
 				return 1;
 			}
 		}
@@ -246,10 +247,12 @@ int main(int argc, char **argv)
 			if (OPT_SERVER_MODE) {
 				// send boot msg
 				if ((wait % 3) == 0) {
-					msg_t s_msg;
-					s_msg.cmd = ascii;
-					send_ack (ptc_grp, &s_msg);
-					info ("send cmd = %c\n", s_msg.cmd);
+					protocol_t s;
+					s.header = '@';
+					s.tail = '#';
+					s.p.cmd = ascii;
+					send_msg (ptc_grp, &s);
+					info ("send cmd = %c\n", s.p.cmd);
 				}
 				if (ptc_grp->p[0].var.pass) {
 					msg_t *r_msg = (msg_t *)ptc_grp->p[0].var.arg;
@@ -263,16 +266,18 @@ int main(int argc, char **argv)
 				}
 			} else {
 				if (ptc_grp->p[p_cnt].var.pass) {
-					msg_t s_msg;
+					protocol_t s;
 					time_t t;
 					time(&t);
 					ptc_grp->p[0].var.pass = false;
 					ptc_grp->p[0].var.open = true;
 					info ("Pass cmd = %c, protocol no %d\n", r_msg.cmd, p_cnt);
-					s_msg.cmd  = r_msg.cmd;
-					sprintf (s_msg.data, "received p = %d", p_cnt);
-					sprintf (s_msg.msg, "%s", ctime(&t));
-					send_ack(ptc_grp, &s_msg);
+					s.header = '@';
+					s.tail = '#';
+					s.p.cmd  = r_msg.cmd;
+					sprintf (s.p.data, "received p = %d", p_cnt);
+					sprintf (s.p.msg, "%s", ctime(&t));
+					send_msg(ptc_grp, &s);
 				}
 			}
 		}
