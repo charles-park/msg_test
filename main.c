@@ -85,7 +85,6 @@ static void parse_opts (int argc, char *argv[])
 
 		switch (c) {
 		case 'D':
-			tolowerstr (optarg);
 			OPT_DEVICE_NAME = optarg;
 			break;
 		case 's':
