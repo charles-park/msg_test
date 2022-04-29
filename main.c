@@ -278,6 +278,7 @@ int main(int argc, char **argv)
 					sprintf (s.p.data, "received p = %d", p_cnt);
 					sprintf (s.p.msg, "%s", ctime(&t));
 					send_msg(ptc_grp, &s);
+					info ("ack Data = %s, msg = %s\n", s.p.data, s.p.msg);
 				}
 			}
 		}
