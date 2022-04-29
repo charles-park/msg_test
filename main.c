@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 	if (!(ptc_grp = ptc_grp_init (fd, 1)))
 		return 0;
 
-	if (!ptc_func_init (ptc_grp, 0, 23, chk_func, cat_func, &r_msg))
+	if (!ptc_func_init (ptc_grp, 0, sizeof(protocol_t), chk_func, cat_func, &r_msg))
 		goto out;
 
 	if (OPT_SERVER_MODE){
