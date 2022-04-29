@@ -107,7 +107,7 @@ static void parse_opts (int argc, char *argv[])
 #pragma pack(1)
 typedef struct msg__t {
 	char	cmd;
-	char	msg[20];
+	char	msg[40];
 	char	data[20];
 }	msg_t;
 
@@ -277,6 +277,7 @@ int main(int argc, char **argv)
 					s.p.cmd  = r_msg.cmd;
 					sprintf (s.p.data, "received p = %d", p_cnt);
 					sprintf (s.p.msg, "%s", ctime(&t));
+					s.p.msg[strlen(s.p.msg) -1] = ' ';
 					send_msg(ptc_grp, &s);
 					info ("ack Data = %s, msg = %s\n", s.p.data, s.p.msg);
 				}
